@@ -21,13 +21,11 @@
   (doto (TerminalBuilder/terminal)
     (.enterRawMode)))
 
-(defn input [{{:keys [timeout input-mapping]} :console}
-             ^Terminal terminal]
-  (let [read (.read (.reader terminal) ^int timeout)]
-    (when (not= -2 read)
-      (input-mapping (char read)))))
-
-(defn terminal-input []
-  (let [terminal (raw-terminal)]
-    (fn [_ config]
-      (input config terminal))))
+(defn terminal-input
+  ([]
+   (terminal-input (raw-terminal)))
+  ([^Terminal terminal]
+   (fn [_ {{:keys [timeout input-mapping]} :console}]
+     (let [read (.read (.reader terminal) ^int timeout)]
+       (when (not= -2 read)
+         (input-mapping (char read)))))))

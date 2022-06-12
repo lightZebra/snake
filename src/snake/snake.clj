@@ -1,16 +1,7 @@
 (ns snake.snake)
 
-(def directions
-  {:up    [-1 0]
-   :right [0 1]
-   :down  [1 0]
-   :left  [0 -1]})
-
-(def opposite-directions
-  {:up    :down
-   :right :left
-   :down  :up
-   :left  :right})
+(def directions {:up [-1 0] :right [0 1] :down [1 0] :left [0 -1]})
+(def opposite-directions {:up :down :right :left :down :up :left :right})
 
 (defrecord SnakeState [height weight points dir food-point])
 
