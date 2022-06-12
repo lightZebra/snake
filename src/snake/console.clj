@@ -17,12 +17,17 @@
 (defn display-score [state {{:keys [final-message]} :console}]
   (println (str final-message (snake/score state))))
 
-(defn raw-terminal []
+(defn ^Terminal raw-terminal []
   (doto (TerminalBuilder/terminal)
     (.enterRawMode)))
 
-(defn input [{:keys [timeout console]}
+(defn input [{{:keys [timeout input-mapping]} :console}
              ^Terminal terminal]
   (let [read (.read (.reader terminal) ^int timeout)]
     (when (not= -2 read)
-      (get-in console [:input-mapping (char read)]))))
+      (input-mapping (char read)))))
+
+(defn terminal-input []
+  (let [terminal (raw-terminal)]
+    (fn [_ config]
+      (input config terminal))))

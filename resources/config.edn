@@ -1,9 +1,10 @@
-{:snake   {:height     10
-           :weight     15
+{:snake   {:height     6
+           :weight     6
            :dir        :down
            :points     ([1 1])
            :food-point [4 1]}
- :timeout 300
- :console {:final-message   "Game over, score: "
+ :bot     {:timeout 100}
+ :console {:timeout         300
+           :final-message   "Game over, score: "
            :display-mapping {:head "h" :food "f" :snake "s" :empty "."}
            :input-mapping   {\w :up \d :right \s :down \a :left}}}

@@ -25,7 +25,8 @@
   (let [[row col :as head] (head state)]
     (and (<= 0 row (dec height))
          (<= 0 col (dec weight))
-         (not-any? #{head} (rest points)))))
+         (not-any? #{head} (rest points))
+         (< (count points) (* height weight)))))
 
 (defn point-type [{:keys [points food-point] :as state} point]
   (cond
@@ -35,8 +36,7 @@
     :else :empty))
 
 (defn direction [{:keys [dir] :as state} direction]
-  (if (or (nil? direction)
-          (= (opposite-directions dir) direction))
+  (if (= (opposite-directions direction dir) dir)
     state
     (assoc state :dir direction)))
 
@@ -49,22 +49,23 @@
   (let [next-head (map + (head state) (directions dir))]
     (update state :points conj next-head)))
 
-(defn update-food [f state]
+(defn update-food [state f]
   (if-not (eating? state)
     state
     (assoc state :food-point (f state))))
 
 (defn next-food [{:keys [height weight points]}]
   (rand-nth
-   (remove
-    (set points)
-    (for [row (range height)
-          col (range weight)]
-      [row col]))))
+   (seq
+    (remove
+     (set points)
+     (for [row (range height)
+           col (range weight)]
+       [row col])))))
 
 (defn tick [state next-food]
   (when (alive? state)
-    (->> state
-         update-head
-         update-tail
-         (update-food next-food))))
+    (-> state
+        update-head
+        update-tail
+        (update-food next-food))))
