@@ -1,50 +1,35 @@
 (ns snake.console
-  (:require [snake.snake :as snake]
-            [clojure.string :as str]))
+  (:require [snake.snake :as snake])
+  (:import (org.jline.terminal TerminalBuilder)
+           (clojure.lang IDeref)
+           (java.io Closeable)))
 
 (def clear-sequence "\033[H\033[2J")
 
-(def mapping
-  {:head  "h"
-   :food  "f"
-   :snake "s"
-   :empty "."})
+(defn display [{{:keys [display-mapping]} :console}
+               {:keys [height weight] :as state}]
+  (let [sb (StringBuilder.)]
+    (dotimes [row height]
+      (dotimes [col weight]
+        (.append sb (display-mapping (snake/point-type state [row col]))))
+      (.append sb "\r\n"))
+    (println clear-sequence)
+    (println (str sb))))
 
-(defn display
-  ([state]
-   (display mapping state))
-  ([f {:keys [height weight] :as state}]
-   (let [sb (StringBuilder.)]
-     (dotimes [row height]
-       (dotimes [col weight]
-         (.append sb (f (snake/point-type state [row col]))))
-       (.append sb "\r\n"))
-     (println clear-sequence)
-     (println (str sb)))))
+(defn raw-terminal []
+  (doto (TerminalBuilder/terminal)
+    (.enterRawMode)))
 
-(def input-mapping
-  {\w :up
-   \d :right
-   \s :down
-   \a :left})
-
-(defn input
-  ([]
-   (input input-mapping))
-  ([f]
-   (f (char (.read System/in)))))
-
-(defn setup-single-char-reader []
-  (.exec
-   (Runtime/getRuntime)
-   "sh -c stty -icanon min 1 < /dev/tty"))
-
-(defn input-thread []
-  (setup-single-char-reader)
-  (let [running (atom true)
+(defn input-atom [terminal]
+  (let [reader  (.reader terminal)
+        running (atom true)
         place   (atom nil)]
     (future
       (while @running
-        (reset! place (input-mapping (char (.read System/in))))))
-    [running place]))
+        (reset! place (char (.read reader)))))
+    (reify
+      IDeref
+      (deref [_] @place)
+      Closeable
+      (close [_] (reset! running false)))))
 

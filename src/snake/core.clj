@@ -1,28 +1,24 @@
 (ns snake.core
   (:require [snake.console :as console]
-            [snake.snake :as snake]))
+            [snake.snake :as snake]
+            [clojure.java.io :as io]
+            [clojure.edn :as edn]))
 
-(def snake
-  {:height     10
-   :weight     15
-   :points     '([1 1])
-   :dir        :down
-   :food-point [3 1]})
-
-(defn game-iteration [state display input]
-  (let [input* @input]
-    (display state)
+(defn game-iteration [config state display input]
+  (let [input* (get-in config [:console :input-mapping @input])]
+    (display config state)
     (Thread/sleep 300)
     (snake/tick (snake/direction state input*))))
 
-(defn game-loop [state display input]
+(defn game-loop [config state display input]
   (->> state
-       (iterate #(game-iteration % display input))
+       (iterate #(game-iteration config % display input))
        (drop-while snake/alive?)
        (first)))
 
 (defn -main [& _]
-  (let [[running input] (console/input-thread)
-        end-state (game-loop snake console/display input)]
-    (prn "Game over, score: " (snake/score end-state))
-    (reset! running false)))
+  (with-open [input (console/input-atom (console/raw-terminal))]
+    (let [config    (edn/read-string (slurp (io/resource "config.edn")))
+          snake     (:snake config)
+          end-state (game-loop config snake console/display input)]
+      (prn "Game over, score: " (snake/score end-state)))))

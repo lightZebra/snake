@@ -1,0 +1,17 @@
+{:snake
+ {:height     10
+  :weight     15
+  :dir        :down
+  :points     ([1 1])
+  :food-point [4 1]}
+ :console
+ {:display-mapping
+  {:head  "h"
+   :food  "f"
+   :snake "s"
+   :empty "."}
+  :input-mapping
+  {\w :up
+   \d :right
+   \s :down
+   \a :left}}}
