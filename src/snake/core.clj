@@ -2,23 +2,24 @@
   (:require [snake.console :as console]
             [snake.snake :as snake]
             [clojure.java.io :as io]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn])
+  (:import (org.jline.terminal Terminal)))
 
-(defn game-iteration [config state display input]
-  (let [input* (get-in config [:console :input-mapping @input])]
-    (display config state)
-    (Thread/sleep 300)
-    (snake/tick (snake/direction state input*))))
+(defn game-iteration [config state display ^Terminal terminal]
+  (display config state)
+  (-> state
+      (snake/direction (console/input config terminal))
+      (snake/tick snake/next-food)))
 
-(defn game-loop [config state display input]
-  (->> state
-       (iterate #(game-iteration config % display input))
+(defn game-loop [config display terminal]
+  (->> (:snake config)
+       (iterate #(game-iteration config % display terminal))
        (drop-while snake/alive?)
        (first)))
 
 (defn -main [& _]
-  (with-open [input (console/input-atom (console/raw-terminal))]
-    (let [config    (edn/read-string (slurp (io/resource "config.edn")))
-          snake     (:snake config)
-          end-state (game-loop config snake console/display input)]
-      (prn "Game over, score: " (snake/score end-state)))))
+  (let [config   (edn/read-string (slurp (io/resource "config.edn")))
+        terminal (console/raw-terminal)]
+    (doto (game-loop config console/display terminal)
+      ((partial console/display config))
+      ((partial console/display-score config)))))

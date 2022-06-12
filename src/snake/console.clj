@@ -1,8 +1,6 @@
 (ns snake.console
   (:require [snake.snake :as snake])
-  (:import (org.jline.terminal TerminalBuilder)
-           (clojure.lang IDeref)
-           (java.io Closeable)))
+  (:import (org.jline.terminal TerminalBuilder Terminal)))
 
 (def clear-sequence "\033[H\033[2J")
 
@@ -16,20 +14,16 @@
     (println clear-sequence)
     (println (str sb))))
 
+(defn display-score [{{:keys [final-message]} :console}
+                     state]
+  (println (str final-message (snake/score state))))
+
 (defn raw-terminal []
   (doto (TerminalBuilder/terminal)
     (.enterRawMode)))
 
-(defn input-atom [terminal]
-  (let [reader  (.reader terminal)
-        running (atom true)
-        place   (atom nil)]
-    (future
-      (while @running
-        (reset! place (char (.read reader)))))
-    (reify
-      IDeref
-      (deref [_] @place)
-      Closeable
-      (close [_] (reset! running false)))))
-
+(defn input [{:keys [timeout console]}
+             ^Terminal terminal]
+  (let [read (.read (.reader terminal) ^int timeout)]
+    (when (not= -2 read)
+      (get-in console [:input-mapping (char read)]))))

@@ -62,12 +62,9 @@
           col (range weight)]
       [row col]))))
 
-(defn tick
-  ([state]
-   (tick next-food state))
-  ([next-food state]
-   (when (alive? state)
-     (->> state
-          update-head
-          update-tail
-          (update-food next-food)))))
+(defn tick [state next-food]
+  (when (alive? state)
+    (->> state
+         update-head
+         update-tail
+         (update-food next-food))))
