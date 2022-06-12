@@ -6,7 +6,7 @@
   (:import (org.jline.terminal Terminal)))
 
 (defn game-iteration [config state display ^Terminal terminal]
-  (display config state)
+  (display state config)
   (-> state
       (snake/direction (console/input config terminal))
       (snake/tick snake/next-food)))
@@ -21,5 +21,5 @@
   (let [config   (edn/read-string (slurp (io/resource "config.edn")))
         terminal (console/raw-terminal)]
     (doto (game-loop config console/display terminal)
-      ((partial console/display config))
-      ((partial console/display-score config)))))
+      (console/display config)
+      (console/display-score config))))

@@ -4,8 +4,8 @@
 
 (def clear-sequence "\033[H\033[2J")
 
-(defn display [{{:keys [display-mapping]} :console}
-               {:keys [height weight] :as state}]
+(defn display [{:keys [height weight] :as state}
+               {{:keys [display-mapping]} :console}]
   (let [sb (StringBuilder.)]
     (dotimes [row height]
       (dotimes [col weight]
@@ -14,8 +14,7 @@
     (println clear-sequence)
     (println (str sb))))
 
-(defn display-score [{{:keys [final-message]} :console}
-                     state]
+(defn display-score [state {{:keys [final-message]} :console}]
   (println (str final-message (snake/score state))))
 
 (defn raw-terminal []
